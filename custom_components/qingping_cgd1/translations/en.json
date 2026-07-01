@@ -1,0 +1,35 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "bluetooth_confirm": {
+        "title": "Set up {name}",
+        "description": "Confirm setup for {name} ({address}). Leave the token as-is unless your device needs a different one. If the clock is already set up in another app, reset it first (hold the button until the Bluetooth icon flashes).",
+        "data": { "token": "Auth token (32 hex characters)" }
+      },
+      "user": {
+        "title": "Qingping CGD1 Alarm Clock",
+        "description": "Choose a discovered clock and enter its auth token. If the clock is already set up in another app, reset it first (hold the button until the Bluetooth icon flashes).",
+        "data": {
+          "address": "Device",
+          "token": "Auth token (32 hex characters)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect {name}",
+        "description": "This clock is paired with another app and rejected Home Assistant. Reset it first: press and hold the clock's button until the Bluetooth icon flashes (or remove the clock in the Qingping+ app), then try again. Once reset, the clock pairs with the first app that connects, so add it here straight after resetting.",
+        "data": { "token": "Auth token (32 hex characters)" }
+      }
+    },
+    "error": {
+      "invalid_token": "The auth token must be 32 hexadecimal characters (16 bytes).",
+      "needs_reset": "This clock is paired with another app and rejected Home Assistant. Reset it first: press and hold the clock's button until the Bluetooth icon flashes (or remove the clock in the Qingping+ app), then try again.",
+      "cannot_connect": "Could not connect to the clock. Make sure it is powered on and in range, then try again."
+    },
+    "abort": {
+      "already_configured": "This device is already set up.",
+      "no_devices_found": "No Qingping CGD1 clock was found nearby.",
+      "reauth_successful": "Reconnected successfully."
+    }
+  }
+}

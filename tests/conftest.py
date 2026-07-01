@@ -38,6 +38,36 @@ def _auto_enable_custom_integrations(enable_custom_integrations: object) -> None
     return
 
 
+@pytest.fixture(autouse=True)
+def _no_core_bluetooth_matchers() -> Iterator[None]:
+    """Stop real advertisements from also matching core HA integrations.
+
+    The CGD1's fdcd service data is the same one the built-in `qingping`
+    integration matches on. Letting real discovery run against the full
+    core matcher list starts that integration's config flow too, which
+    needs a dependency (`qingping-ble`) this project doesn't install. Our
+    own domain's matcher is added separately from this custom component's
+    manifest, so clearing the core list only removes the collision.
+    """
+    with patch("homeassistant.loader.BLUETOOTH", []):
+        yield
+
+
+@pytest.fixture
+def expected_lingering_timers() -> bool:
+    """Allow the periodic device-expiry timer `enable_bluetooth` leaves behind.
+
+    `homeassistant.components.bluetooth.async_setup_entry` discards the
+    unsub callback that `HaScanner.async_setup()` returns, so the scanner's
+    `_async_expire_devices_schedule_next` timer is never cancelled when the
+    fixture unloads its config entry. Reproduces with `enable_bluetooth`
+    alone, with no code from this integration involved, on
+    homeassistant==2026.6.3 / habluetooth==6.26.0, so it is an upstream gap
+    rather than something to chase down here.
+    """
+    return True
+
+
 @pytest.fixture
 def mock_entry() -> MockConfigEntry:
     """A configured entry keyed on the device MAC."""

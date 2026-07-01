@@ -80,6 +80,11 @@ plugins = []
 follow_imports = "normal"
 local_partial_types = true
 no_implicit_reexport = true
+mypy_path = "."
+explicit_package_bases = true
+# `custom_components` has no `__init__.py` (standard for HA), so without the
+# two settings above mypy would resolve our integration's modules as bare
+# `qingping_cgd1.*`, colliding with the real `qingping_cgd1` library.
 
 [[tool.mypy.overrides]]
 module = "homeassistant.*"
