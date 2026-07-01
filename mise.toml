@@ -1,0 +1,11 @@
+[tools]
+python = "3.14"
+uv = "latest"
+lefthook = "2.1.9"
+zizmor = "1.25.2"
+
+[settings]
+python.uv_venv_auto = "create|source"
+
+[env]
+UV_PYTHON = { value = "{{ tools.python.path }}", tools = true }

@@ -1,0 +1,18 @@
+{
+  "domain": "qingping_cgd1",
+  "name": "Qingping CGD1 Alarm Clock",
+  "bluetooth": [
+    { "service_data_uuid": "0000fdcd-0000-1000-8000-00805f9b34fb" },
+    { "service_uuid": "22210000-554a-4546-5542-46534450464d" }
+  ],
+  "codeowners": ["@rjocoleman"],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/rjocoleman/ha-qingping-cgd1",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/rjocoleman/ha-qingping-cgd1/issues",
+  "quality_scale": "silver",
+  "requirements": ["qingping-cgd1==0.1.0", "bleak-retry-connector>=3.0"],
+  "version": "0.1.0"
+}

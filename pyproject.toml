@@ -1,0 +1,101 @@
+[project]
+name = "ha-qingping-cgd1"
+version = "0.1.0"
+description = "Home Assistant integration for the Qingping CGD1 Bluetooth alarm clock"
+readme = "README.md"
+requires-python = ">=3.14.2"
+license = "MIT"
+authors = [{ name = "Robert Coleman" }]
+# The runtime dependency is declared in manifest.json and installed by HA.
+dependencies = []
+
+[dependency-groups]
+dev = ["ruff>=0.15", "mypy>=2.1"]
+test = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.25",
+  "pytest-cov>=6.0",
+  "pytest-homeassistant-custom-component==0.13.339",
+  # The library is a real runtime dependency; tests import parse_advertisement,
+  # next_alarm and the models directly, so pin the same version the manifest
+  # requires.
+  "qingping-cgd1==0.1.0",
+  # Fixed "now" for the next-alarm timestamp sensor test.
+  "freezegun>=1.5",
+  "aiousbwatcher==1.1.2",
+  "serialx==1.8.0",
+  "aioesphomeapi>=45.3.1",
+  "dbus-fast>=5.0.22",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+qingping-cgd1 = { path = "../qingping-cgd1", editable = true }
+
+[tool.ruff]
+required-version = ">=0.14"
+target-version = "py314"
+line-length = 88
+src = ["custom_components", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "A", "ASYNC", "B", "BLE", "C4", "C90", "D", "DTZ", "E", "EM", "EXE", "F",
+  "FA", "FLY", "FURB", "G", "I", "ICN", "INP", "ISC", "LOG", "N", "PERF",
+  "PGH", "PIE", "PL", "PT", "PTH", "RET", "RSE", "RUF", "S", "SIM", "SLF",
+  "SLOT", "T20", "TC", "TID", "TRY", "UP", "W",
+]
+ignore = ["D203", "D213", "E501", "ISC001", "N818"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D", "S101", "PLR2004", "SLF001"]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["homeassistant.helpers.entity.Entity"]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"homeassistant.helpers.config_validation" = "cv"
+"homeassistant.helpers.device_registry" = "dr"
+"homeassistant.helpers.entity_registry" = "er"
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+combine-as-imports = true
+known-first-party = ["custom_components.qingping_cgd1"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+plugins = []
+follow_imports = "normal"
+local_partial_types = true
+no_implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = "homeassistant.*"
+ignore_missing_imports = true
+implicit_reexport = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers --strict-config"
+
+[tool.coverage.run]
+branch = true
+source = ["custom_components/qingping_cgd1"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "@overload"]

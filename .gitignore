@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.coverage
+coverage.xml
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Tooling scratch dirs, never committed
+.superpowers/
+.omc/
