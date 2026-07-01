@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from homeassistant.const import Platform
+
 from .coordinator import (
     QingpingControlCoordinator,
     QingpingData,
@@ -11,12 +13,11 @@ from .coordinator import (
 )
 
 if TYPE_CHECKING:
-    from homeassistant.const import Platform
     from homeassistant.core import HomeAssistant
 
     from .coordinator import QingpingConfigEntry
 
-PLATFORMS: list[Platform] = []
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: QingpingConfigEntry) -> bool:

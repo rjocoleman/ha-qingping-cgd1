@@ -41,5 +41,15 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": { "name": "Temperature" },
+      "humidity": { "name": "Humidity" },
+      "battery": { "name": "Battery" },
+      "signal_strength": { "name": "Signal strength" },
+      "firmware": { "name": "Firmware" },
+      "next_alarm": { "name": "Next alarm" }
+    }
   }
 }
