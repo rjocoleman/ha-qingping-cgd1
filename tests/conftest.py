@@ -39,6 +39,18 @@ def _auto_enable_custom_integrations(enable_custom_integrations: object) -> None
 
 
 @pytest.fixture(autouse=True)
+async def _default_ha_timezone(hass: HomeAssistant) -> None:
+    """Match HA's timezone to `sample_settings()`'s stored offset by default.
+
+    `Pacific/Tongatapu` is a fixed UTC+13 zone with no DST, so it equals
+    `sample_settings().tz_offset_minutes` (780) on any date. This keeps
+    unrelated tests from tripping the DST tz-correction write; tests that
+    exercise it set their own timezone.
+    """
+    await hass.config.async_set_time_zone("Pacific/Tongatapu")
+
+
+@pytest.fixture(autouse=True)
 def _no_core_bluetooth_matchers() -> Iterator[None]:
     """Stop real advertisements from also matching core HA integrations.
 

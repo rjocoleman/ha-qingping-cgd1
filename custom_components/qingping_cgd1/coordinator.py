@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
+from datetime import timedelta
 import logging
 from typing import TYPE_CHECKING, Any
 
@@ -19,14 +20,19 @@ from homeassistant.const import CONF_ADDRESS
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from qingping_cgd1.client import QingpingCGD1Client
 from qingping_cgd1.exceptions import AuthError, QingpingError
 
 from .const import (
+    CONF_MATCH_HA_TIMEZONE,
+    CONF_SYNC_INTERVAL_HOURS,
     CONF_SYNC_TIME_ON_CONNECT,
     CONF_TOKEN,
+    DEFAULT_MATCH_HA_TIMEZONE,
     DEFAULT_NAME,
+    DEFAULT_SYNC_INTERVAL_HOURS,
     DEFAULT_SYNC_TIME_ON_CONNECT,
     DOMAIN,
     MANUFACTURER,
@@ -44,6 +50,12 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 type QingpingConfigEntry = ConfigEntry[QingpingData]
+
+
+def _ha_utc_offset_minutes() -> int:
+    """Return HA's current UTC offset in minutes, DST-aware."""
+    offset = dt_util.now().utcoffset()
+    return 0 if offset is None else round(offset.total_seconds() / 60)
 
 
 @dataclass
@@ -86,17 +98,31 @@ class QingpingControlCoordinator(DataUpdateCoordinator[QingpingControlData]):
 
     def __init__(self, hass: HomeAssistant, entry: QingpingConfigEntry) -> None:
         """Initialise from the entry's address and token."""
-        # No polling: the passive path keeps sensors fresh, and control state
-        # only changes when we write it, so we refresh explicitly after writes.
+        # Read once per (re)load; the options-update listener reloads the entry
+        # so a change takes effect without a restart.
+        interval_hours = entry.options.get(
+            CONF_SYNC_INTERVAL_HOURS, DEFAULT_SYNC_INTERVAL_HOURS
+        )
+        update_interval = (
+            timedelta(hours=interval_hours) if interval_hours > 0 else None
+        )
+        # The passive path keeps sensors fresh, and control state only changes
+        # when we write it, so most refreshes happen on demand. The periodic
+        # interval above exists purely to catch clock drift and DST changes.
         super().__init__(
-            hass, _LOGGER, name=DOMAIN, update_interval=None, config_entry=entry
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=update_interval,
+            config_entry=entry,
         )
         self.address: str = entry.data[CONF_ADDRESS]
         self._token: bytes = bytes.fromhex(entry.data[CONF_TOKEN])
-        # Read once per (re)load; the options-update listener reloads the entry
-        # so a change takes effect without a restart.
         self.sync_on_connect: bool = entry.options.get(
             CONF_SYNC_TIME_ON_CONNECT, DEFAULT_SYNC_TIME_ON_CONNECT
+        )
+        self.match_ha_timezone: bool = entry.options.get(
+            CONF_MATCH_HA_TIMEZONE, DEFAULT_MATCH_HA_TIMEZONE
         )
 
     @property
@@ -126,6 +152,20 @@ class QingpingControlCoordinator(DataUpdateCoordinator[QingpingControlData]):
                 settings = await client.read_settings()
                 alarms = await client.read_alarms()
                 info = await client.read_firmware()
+                # The clock has no DST logic of its own: it stores a fixed tz
+                # offset and shows local time as UTC epoch + that offset. Bring
+                # it back in line with HA's current (DST-aware) offset before
+                # syncing the epoch, so both stay correct across DST changes.
+                if self.match_ha_timezone:
+                    ha_offset = _ha_utc_offset_minutes()
+                    if ha_offset != settings.tz_offset_minutes:
+                        # The wire encodes the offset in 6-minute steps, so an
+                        # offset that isn't a multiple of 6 (rare, e.g.
+                        # +5:45) rounds when written. Acceptable.
+                        settings = dataclasses.replace(
+                            settings, tz_offset_minutes=ha_offset
+                        )
+                        await client.write_settings(settings)
                 # Sync while the link is already open; the client compensates for
                 # the connect delay. Gated by the options-flow toggle.
                 if self.sync_on_connect:

@@ -16,6 +16,14 @@ CONF_TOKEN: Final = "token"  # noqa: S105 -- config key name, not a secret value
 # options flow.
 CONF_SYNC_TIME_ON_CONNECT: Final = "sync_time_on_connect"
 DEFAULT_SYNC_TIME_ON_CONNECT: Final = True
+# Correct the clock's stored tz offset to Home Assistant's current (DST-aware)
+# offset whenever they differ. Default on; toggled in the options flow.
+CONF_MATCH_HA_TIMEZONE: Final = "match_ha_timezone"
+DEFAULT_MATCH_HA_TIMEZONE: Final = True
+# How often the control coordinator polls to correct drift and the tz offset.
+# 0 disables periodic polling; the coordinator still refreshes on demand.
+CONF_SYNC_INTERVAL_HOURS: Final = "sync_interval_hours"
+DEFAULT_SYNC_INTERVAL_HOURS: Final = 24
 
 DEFAULT_NAME: Final = "Qingping Alarm Clock"
 MANUFACTURER: Final = "Qingping"

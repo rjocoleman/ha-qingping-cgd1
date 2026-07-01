@@ -10,8 +10,12 @@ from homeassistant.data_entry_flow import FlowResultType
 from qingping_cgd1.exceptions import AuthError
 
 from custom_components.qingping_cgd1.const import (
+    CONF_MATCH_HA_TIMEZONE,
+    CONF_SYNC_INTERVAL_HOURS,
     CONF_SYNC_TIME_ON_CONNECT,
     CONF_TOKEN,
+    DEFAULT_MATCH_HA_TIMEZONE,
+    DEFAULT_SYNC_INTERVAL_HOURS,
     DOMAIN,
 )
 from qingping_cgd1.const import DEFAULT_AUTH_TOKEN
@@ -179,4 +183,8 @@ async def test_options_flow_toggles_auto_sync(
         result["flow_id"], {CONF_SYNC_TIME_ON_CONNECT: False}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert mock_entry.options == {CONF_SYNC_TIME_ON_CONNECT: False}
+    assert mock_entry.options == {
+        CONF_SYNC_TIME_ON_CONNECT: False,
+        CONF_MATCH_HA_TIMEZONE: DEFAULT_MATCH_HA_TIMEZONE,
+        CONF_SYNC_INTERVAL_HOURS: DEFAULT_SYNC_INTERVAL_HOURS,
+    }

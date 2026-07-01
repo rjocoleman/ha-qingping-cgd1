@@ -22,9 +22,13 @@ from qingping_cgd1.const import DEFAULT_AUTH_TOKEN
 from qingping_cgd1.exceptions import AuthError, QingpingError
 
 from .const import (
+    CONF_MATCH_HA_TIMEZONE,
+    CONF_SYNC_INTERVAL_HOURS,
     CONF_SYNC_TIME_ON_CONNECT,
     CONF_TOKEN,
+    DEFAULT_MATCH_HA_TIMEZONE,
     DEFAULT_NAME,
+    DEFAULT_SYNC_INTERVAL_HOURS,
     DEFAULT_SYNC_TIME_ON_CONNECT,
     DEVICE_SERVICE_UUID,
     DOMAIN,
@@ -222,10 +226,26 @@ class QingpingOptionsFlow(OptionsFlow):
         """Show and store the auto-sync toggle."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
-        current = self.config_entry.options.get(
+        current_sync_on_connect = self.config_entry.options.get(
             CONF_SYNC_TIME_ON_CONNECT, DEFAULT_SYNC_TIME_ON_CONNECT
         )
+        current_match_ha_timezone = self.config_entry.options.get(
+            CONF_MATCH_HA_TIMEZONE, DEFAULT_MATCH_HA_TIMEZONE
+        )
+        current_sync_interval_hours = self.config_entry.options.get(
+            CONF_SYNC_INTERVAL_HOURS, DEFAULT_SYNC_INTERVAL_HOURS
+        )
         schema = vol.Schema(
-            {vol.Required(CONF_SYNC_TIME_ON_CONNECT, default=current): bool}
+            {
+                vol.Required(
+                    CONF_SYNC_TIME_ON_CONNECT, default=current_sync_on_connect
+                ): bool,
+                vol.Required(
+                    CONF_MATCH_HA_TIMEZONE, default=current_match_ha_timezone
+                ): bool,
+                vol.Required(
+                    CONF_SYNC_INTERVAL_HOURS, default=current_sync_interval_hours
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=168)),
+            }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

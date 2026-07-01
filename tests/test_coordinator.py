@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 import dataclasses
+from datetime import timedelta
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
+from freezegun import freeze_time
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from qingping_cgd1.exceptions import AuthError, QingpingError
 
-from custom_components.qingping_cgd1.const import CONF_SYNC_TIME_ON_CONNECT
+from custom_components.qingping_cgd1.const import (
+    CONF_MATCH_HA_TIMEZONE,
+    CONF_SYNC_INTERVAL_HOURS,
+    CONF_SYNC_TIME_ON_CONNECT,
+)
 from custom_components.qingping_cgd1.coordinator import QingpingControlCoordinator
 from tests.conftest import MAC, sample_settings
 
@@ -136,3 +142,74 @@ async def test_write_auth_error_becomes_config_entry_auth_failed(
     mock_client.write_settings.side_effect = AuthError("clock is bound elsewhere")
     with pytest.raises(ConfigEntryAuthFailed):
         await coordinator.async_update_settings(volume=5)
+
+
+@freeze_time("2026-07-01 12:00:00")
+async def test_tz_mismatch_corrects_offset(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_client: MagicMock
+) -> None:
+    """A DST mismatch writes the corrected offset and returns it in data."""
+    await hass.config.async_set_time_zone("Pacific/Auckland")  # NZST here: +12:00
+    coordinator = _coordinator(hass, mock_entry)
+    await coordinator.async_refresh()
+
+    written = mock_client.write_settings.await_args.args[0]
+    assert written.tz_offset_minutes == 720
+    assert coordinator.data.settings.tz_offset_minutes == 720
+
+
+@freeze_time("2026-01-15 12:00:00")
+async def test_tz_match_skips_write(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_client: MagicMock
+) -> None:
+    """No write happens when the stored offset already matches HA's."""
+    await hass.config.async_set_time_zone("Pacific/Auckland")  # NZDT here: +13:00
+    coordinator = _coordinator(hass, mock_entry)
+    await coordinator.async_refresh()
+
+    assert mock_client.write_settings.await_count == 0
+    assert (
+        coordinator.data.settings.tz_offset_minutes
+        == sample_settings().tz_offset_minutes
+    )
+
+
+@freeze_time("2026-07-01 12:00:00")
+async def test_tz_matching_off_skips_write(
+    hass: HomeAssistant, mock_client: MagicMock
+) -> None:
+    """With timezone matching off, a mismatch is left uncorrected."""
+    await hass.config.async_set_time_zone("Pacific/Auckland")  # NZST here: +12:00
+    entry = MockConfigEntry(
+        domain="qingping_cgd1",
+        unique_id=MAC,
+        data={"address": MAC, "token": "6e021111c28d192cfedbe04038a7f238"},
+        options={CONF_MATCH_HA_TIMEZONE: False},
+    )
+    coordinator = _coordinator(hass, entry)
+    await coordinator.async_refresh()
+
+    assert mock_client.write_settings.await_count == 0
+    assert (
+        coordinator.data.settings.tz_offset_minutes
+        == sample_settings().tz_offset_minutes
+    )
+
+
+def test_update_interval_reflects_option(hass: HomeAssistant) -> None:
+    """The configured sync interval becomes the coordinator's update_interval."""
+    twelve_hourly = MockConfigEntry(
+        domain="qingping_cgd1",
+        unique_id=f"{MAC}-12h",
+        data={"address": MAC, "token": "6e021111c28d192cfedbe04038a7f238"},
+        options={CONF_SYNC_INTERVAL_HOURS: 12},
+    )
+    assert _coordinator(hass, twelve_hourly).update_interval == timedelta(hours=12)
+
+    disabled = MockConfigEntry(
+        domain="qingping_cgd1",
+        unique_id=f"{MAC}-disabled",
+        data={"address": MAC, "token": "6e021111c28d192cfedbe04038a7f238"},
+        options={CONF_SYNC_INTERVAL_HOURS: 0},
+    )
+    assert _coordinator(hass, disabled).update_interval is None

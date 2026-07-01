@@ -37,7 +37,9 @@
       "init": {
         "title": "Qingping CGD1 options",
         "data": {
-          "sync_time_on_connect": "Sync the clock on every connection"
+          "sync_time_on_connect": "Sync the clock on every connection",
+          "match_ha_timezone": "Keep the clock's timezone matched to Home Assistant (handles DST)",
+          "sync_interval_hours": "Auto-sync interval in hours (0 to disable)"
         }
       }
     }

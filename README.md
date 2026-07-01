@@ -42,7 +42,12 @@ integration also connects to the clock for the full control surface.
   enabled state).
 - **Time sync**, pushed to the clock automatically on every successful
   connection (an option you can turn off), or manually via a button or
-  service call.
+  service call. The clock's crystal drifts and it has no DST logic of its
+  own, so the integration also polls periodically (every 24 hours by
+  default, configurable, 0 to disable) to correct drift and, if the clock's
+  stored timezone offset no longer matches Home Assistant's current one,
+  update it. This is what keeps the clock (and the next-alarm sensor)
+  correct across a DST change.
 
 ## Installing through HACS
 
@@ -82,7 +87,8 @@ something else. Reset it as described above and try again.
 
 Open the integration and choose **Configure** to turn automatic time sync
 on connection off, if you would rather sync manually via the button or
-service.
+service. The same form lets you turn off timezone matching or change the
+periodic sync interval.
 
 ## Entities
 
