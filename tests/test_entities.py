@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from freezegun import freeze_time
 from homeassistant.const import EntityCategory
 from qingping_cgd1.codec import next_alarm
+from qingping_cgd1.models import Language
 
 from tests.conftest import (
     inject_service_info,
@@ -30,6 +31,9 @@ FIRMWARE = "sensor.qingping_alarm_clock_firmware"
 NEXT_ALARM = "sensor.qingping_alarm_clock_next_alarm"
 VOLUME = "number.qingping_alarm_clock_volume"
 DAY_BRIGHTNESS = "number.qingping_alarm_clock_day_brightness"
+LANGUAGE = "select.qingping_alarm_clock_language"
+TIME_FORMAT = "select.qingping_alarm_clock_time_format"
+UNIT = "select.qingping_alarm_clock_temperature_unit"
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -120,3 +124,92 @@ async def test_number_write_updates_setting(
     )
     written = mock_client.write_settings.await_args.args[0]
     assert written.volume == 5
+
+
+async def test_select_reads_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Selects reflect the read settings."""
+    await _setup(hass, mock_entry)
+    assert hass.states.get(LANGUAGE).state == "en"
+    assert hass.states.get(TIME_FORMAT).state == "24h"
+    assert hass.states.get(UNIT).state == "celsius"
+
+
+async def test_select_write_updates_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Choosing Fahrenheit writes unit_celsius=False."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "select",
+        "select_option",
+        {"entity_id": UNIT, "option": "fahrenheit"},
+        blocking=True,
+    )
+    assert mock_client.write_settings.await_args.args[0].unit_celsius is False
+
+
+async def test_select_unit_write_back_to_celsius(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Choosing Celsius writes unit_celsius=True."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "select",
+        "select_option",
+        {"entity_id": UNIT, "option": "celsius"},
+        blocking=True,
+    )
+    assert mock_client.write_settings.await_args.args[0].unit_celsius is True
+
+
+async def test_select_time_format_write_updates_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Choosing 12-hour writes time_format_24h=False, and back again."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "select",
+        "select_option",
+        {"entity_id": TIME_FORMAT, "option": "12h"},
+        blocking=True,
+    )
+    assert mock_client.write_settings.await_args.args[0].time_format_24h is False
+
+    await hass.services.async_call(
+        "select",
+        "select_option",
+        {"entity_id": TIME_FORMAT, "option": "24h"},
+        blocking=True,
+    )
+    assert mock_client.write_settings.await_args.args[0].time_format_24h is True
+
+
+async def test_select_language_write_updates_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Choosing Chinese writes the Language enum, not the raw string."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "select",
+        "select_option",
+        {"entity_id": LANGUAGE, "option": "zh"},
+        blocking=True,
+    )
+    assert mock_client.write_settings.await_args.args[0].language is Language.CHINESE

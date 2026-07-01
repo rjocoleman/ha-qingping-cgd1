@@ -56,6 +56,20 @@
       "day_brightness": { "name": "Day Brightness" },
       "night_brightness": { "name": "Night Brightness" },
       "screen_light_seconds": { "name": "Backlight Timeout" }
+    },
+    "select": {
+      "language": {
+        "name": "Language",
+        "state": { "zh": "Chinese", "en": "English" }
+      },
+      "time_format": {
+        "name": "Time Format",
+        "state": { "24h": "24-hour", "12h": "12-hour" }
+      },
+      "temperature_unit": {
+        "name": "Temperature Unit",
+        "state": { "celsius": "Celsius", "fahrenheit": "Fahrenheit" }
+      }
     }
   }
 }
