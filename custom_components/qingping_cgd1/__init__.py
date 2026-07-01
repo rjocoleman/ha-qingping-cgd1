@@ -17,7 +17,12 @@ if TYPE_CHECKING:
 
     from .coordinator import QingpingConfigEntry
 
-PLATFORMS: list[Platform] = [Platform.NUMBER, Platform.SELECT, Platform.SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: QingpingConfigEntry) -> bool:

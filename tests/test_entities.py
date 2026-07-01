@@ -34,6 +34,9 @@ DAY_BRIGHTNESS = "number.qingping_alarm_clock_day_brightness"
 LANGUAGE = "select.qingping_alarm_clock_language"
 TIME_FORMAT = "select.qingping_alarm_clock_time_format"
 UNIT = "select.qingping_alarm_clock_temperature_unit"
+MASTER = "switch.qingping_alarm_clock_alarms"
+NIGHT_MODE = "switch.qingping_alarm_clock_night_mode"
+ALARM0_ENABLE = "switch.qingping_alarm_clock_alarm_1_enabled"
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -213,3 +216,51 @@ async def test_select_language_write_updates_setting(
         blocking=True,
     )
     assert mock_client.write_settings.await_args.args[0].language is Language.CHINESE
+
+
+async def test_switch_reads_state(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Master and per-alarm switches reflect the read data."""
+    await _setup(hass, mock_entry)
+    assert hass.states.get(MASTER).state == "on"
+    assert hass.states.get(NIGHT_MODE).state == "on"
+    assert hass.states.get(ALARM0_ENABLE).state == "on"
+
+
+async def test_alarm_enable_toggle_writes_alarm(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Turning off alarm 1 writes slot 0 with enabled=False, other fields intact."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "switch",
+        "turn_off",
+        {"entity_id": ALARM0_ENABLE},
+        blocking=True,
+    )
+    slot, alarm = mock_client.write_alarm.await_args.args
+    assert slot == 0
+    assert alarm.enabled is False
+    assert alarm.hour == 7
+    assert alarm.minute == 30
+
+
+async def test_extra_alarm_slots_disabled_by_default(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Slot 3 (index 2) is registered but disabled by default."""
+    await _setup(hass, mock_entry)
+    registry = hass.data["entity_registry"]
+    entry = registry.async_get("switch.qingping_alarm_clock_alarm_3_enabled")
+    assert entry is not None
+    assert entry.disabled_by is not None

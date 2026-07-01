@@ -70,6 +70,11 @@
         "name": "Temperature Unit",
         "state": { "celsius": "Celsius", "fahrenheit": "Fahrenheit" }
       }
+    },
+    "switch": {
+      "alarms": { "name": "Alarms" },
+      "night_mode": { "name": "Night Mode" },
+      "alarm_enabled": { "name": "Alarm {slot} enabled" }
     }
   }
 }
