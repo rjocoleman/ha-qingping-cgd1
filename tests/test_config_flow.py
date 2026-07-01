@@ -9,7 +9,11 @@ from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResultType
 from qingping_cgd1.exceptions import AuthError
 
-from custom_components.qingping_cgd1.const import CONF_TOKEN, DOMAIN
+from custom_components.qingping_cgd1.const import (
+    CONF_SYNC_TIME_ON_CONNECT,
+    CONF_TOKEN,
+    DOMAIN,
+)
 from qingping_cgd1.const import DEFAULT_AUTH_TOKEN
 from tests.conftest import MAC, inject_service_info, make_service_info
 
@@ -154,3 +158,25 @@ async def test_reauth_flow_needs_reset(
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {"base": "needs_reset"}
+
+
+async def test_options_flow_toggles_auto_sync(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """The options flow stores the auto-sync toggle."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(mock_entry.entry_id)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SYNC_TIME_ON_CONNECT: False}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_entry.options == {CONF_SYNC_TIME_ON_CONNECT: False}

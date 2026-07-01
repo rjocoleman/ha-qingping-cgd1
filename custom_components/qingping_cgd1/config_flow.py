@@ -8,8 +8,13 @@ from homeassistant.components.bluetooth import (
     async_ble_device_from_address,
     async_discovered_service_info,
 )
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_ADDRESS
+from homeassistant.core import callback
 import voluptuous as vol
 
 from qingping_cgd1.client import QingpingCGD1Client
@@ -17,8 +22,10 @@ from qingping_cgd1.const import DEFAULT_AUTH_TOKEN
 from qingping_cgd1.exceptions import AuthError, QingpingError
 
 from .const import (
+    CONF_SYNC_TIME_ON_CONNECT,
     CONF_TOKEN,
     DEFAULT_NAME,
+    DEFAULT_SYNC_TIME_ON_CONNECT,
     DEVICE_SERVICE_UUID,
     DOMAIN,
     SERVICE_DATA_UUID,
@@ -28,6 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
+    from homeassistant.config_entries import ConfigEntry
 
 TOKEN_LENGTH_BYTES = 16
 
@@ -57,6 +65,14 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Start with no pending discovery."""
         self._discovery: BluetoothServiceInfoBleak | None = None
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> QingpingOptionsFlow:
+        """Return the options flow."""
+        return QingpingOptionsFlow()
 
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
@@ -195,3 +211,21 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
             title=DEFAULT_NAME,
             data={CONF_ADDRESS: address, CONF_TOKEN: token_hex},
         )
+
+
+class QingpingOptionsFlow(OptionsFlow):
+    """Toggle automatic time sync."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show and store the auto-sync toggle."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        current = self.config_entry.options.get(
+            CONF_SYNC_TIME_ON_CONNECT, DEFAULT_SYNC_TIME_ON_CONNECT
+        )
+        schema = vol.Schema(
+            {vol.Required(CONF_SYNC_TIME_ON_CONNECT, default=current): bool}
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)

@@ -31,5 +31,15 @@
       "no_devices_found": "No Qingping CGD1 clock was found nearby.",
       "reauth_successful": "Reconnected successfully."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Qingping CGD1 options",
+        "data": {
+          "sync_time_on_connect": "Sync the clock on every connection"
+        }
+      }
+    }
   }
 }
