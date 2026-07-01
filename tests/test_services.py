@@ -157,6 +157,28 @@ async def test_set_alarm_rejects_unknown_device(
     mock_client.write_alarm.assert_not_awaited()
 
 
+async def test_set_alarm_rejects_not_loaded_entry(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """A device whose config entry is not loaded raises, not AttributeError."""
+    await _setup(hass, mock_entry)
+    device_id = await _device_id(hass)
+    assert await hass.config_entries.async_unload(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_ALARM,
+            {"device_id": device_id, ATTR_SLOT: 0, ATTR_TIME: "06:00:00"},
+            blocking=True,
+        )
+    mock_client.write_alarm.assert_not_awaited()
+
+
 async def test_sync_time_service(
     hass: HomeAssistant,
     enable_bluetooth: None,

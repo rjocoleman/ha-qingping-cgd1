@@ -37,14 +37,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: QingpingConfigEntry) -> 
 
     entry.async_on_unload(passive.async_start())
     entry.async_on_unload(entry.add_update_listener(_async_reload_on_update))
+
+    # Read the control state before forwarding to platforms so entities pick
+    # up the firmware version at construction time, not on some later
+    # refresh. async_refresh() never raises: a push integration must not fail
+    # to load just because the clock is momentarily out of range.
+    await control.async_refresh()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     if not hass.services.has_service(DOMAIN, SERVICE_SYNC_TIME):
         async_setup_services(hass)
 
-    # Populate the control entities without blocking setup: a push integration
-    # must not fail to load just because the clock is momentarily out of range.
-    await control.async_refresh()
     return True
 
 

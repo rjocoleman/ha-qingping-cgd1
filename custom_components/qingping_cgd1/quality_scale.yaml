@@ -2,7 +2,11 @@
 # Target tier: Silver.
 rules:
   # --- Bronze ---
-  action-setup: done
+  action-setup:
+    status: todo
+    comment: >-
+      Services are registered per-entry from async_setup_entry (via
+      async_setup_services), not from async_setup.
   appropriate-polling:
     status: exempt
     comment: Sensors are push via advertisements; control state changes only on write.
@@ -27,7 +31,12 @@ rules:
   test-before-configure:
     status: exempt
     comment: The device is validated by bluetooth discovery; no network probe at config time.
-  test-before-setup: done
+  test-before-setup:
+    status: exempt
+    comment: >-
+      Push/local-only integration: the passive advertisement path works
+      without a connection, and the control path recovers on its own, so
+      setup deliberately doesn't block or retry on device reachability.
   unique-config-entry: done
 
   # --- Silver ---

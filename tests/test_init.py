@@ -5,6 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers import device_registry as dr
+
+from custom_components.qingping_cgd1.const import DOMAIN
+from tests.conftest import MAC
 
 if TYPE_CHECKING:
     from unittest.mock import MagicMock
@@ -45,3 +49,17 @@ async def test_runtime_data_is_populated(
     data = mock_entry.runtime_data
     assert data.passive is not None
     assert data.control is not None
+
+
+async def test_device_sw_version_populated_on_setup(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_client: MagicMock
+) -> None:
+    """The device registry entry picks up the firmware read during setup."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    registry = dr.async_get(hass)
+    device = registry.async_get_device(identifiers={(DOMAIN, MAC)})
+    assert device is not None
+    assert device.sw_version == "1.2.3"

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ServiceValidationError
@@ -69,7 +70,12 @@ def _coordinator(hass: HomeAssistant, device_id: str) -> QingpingControlCoordina
         entry: QingpingConfigEntry | None = hass.config_entries.async_get_entry(
             entry_id
         )
-        if entry is not None and entry.domain == DOMAIN and entry.state.recoverable:
+        if entry is not None and entry.domain == DOMAIN:
+            if entry.state is not ConfigEntryState.LOADED:
+                msg = (
+                    f"The Qingping CGD1 integration entry for {device_id} is not loaded"
+                )
+                raise ServiceValidationError(msg)
             return entry.runtime_data.control
     msg = f"Device {device_id} is not a loaded Qingping CGD1"
     raise ServiceValidationError(msg)
