@@ -75,6 +75,11 @@
       "alarms": { "name": "Alarms" },
       "night_mode": { "name": "Night Mode" },
       "alarm_enabled": { "name": "Alarm {slot} enabled" }
+    },
+    "time": {
+      "night_start": { "name": "Night Mode From" },
+      "night_end": { "name": "Night Mode To" },
+      "alarm_time": { "name": "Alarm {slot} time" }
     }
   }
 }

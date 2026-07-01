@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, time as dt_time, timedelta, timezone
 from typing import TYPE_CHECKING
 
 from freezegun import freeze_time
 from homeassistant.const import EntityCategory
 from qingping_cgd1.codec import next_alarm
-from qingping_cgd1.models import Language
+from qingping_cgd1.models import Language, Weekday
 
 from tests.conftest import (
     inject_service_info,
@@ -37,6 +37,9 @@ UNIT = "select.qingping_alarm_clock_temperature_unit"
 MASTER = "switch.qingping_alarm_clock_alarms"
 NIGHT_MODE = "switch.qingping_alarm_clock_night_mode"
 ALARM0_ENABLE = "switch.qingping_alarm_clock_alarm_1_enabled"
+NIGHT_START = "time.qingping_alarm_clock_night_mode_from"
+NIGHT_END = "time.qingping_alarm_clock_night_mode_to"
+ALARM0_TIME = "time.qingping_alarm_clock_alarm_1_time"
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -264,3 +267,55 @@ async def test_extra_alarm_slots_disabled_by_default(
     entry = registry.async_get("switch.qingping_alarm_clock_alarm_3_enabled")
     assert entry is not None
     assert entry.disabled_by is not None
+
+
+async def test_time_reads_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Night-start, night-end, and alarm-1 time reflect the read data."""
+    await _setup(hass, mock_entry)
+    assert hass.states.get(NIGHT_START).state == "22:00:00"
+    assert hass.states.get(NIGHT_END).state == "07:00:00"
+    assert hass.states.get(ALARM0_TIME).state == "07:30:00"
+
+
+async def test_alarm_time_set_writes_alarm(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Setting alarm 1 time writes slot 0 with the new hour and minute, keeping other fields."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "time",
+        "set_value",
+        {"entity_id": ALARM0_TIME, "time": dt_time(6, 15)},
+        blocking=True,
+    )
+    slot, alarm = mock_client.write_alarm.await_args.args
+    assert slot == 0
+    assert (alarm.hour, alarm.minute) == (6, 15)
+    assert alarm.enabled is True
+    assert alarm.days == frozenset({Weekday.MONDAY, Weekday.FRIDAY})
+    assert alarm.snooze is False
+
+
+async def test_night_start_set_writes_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Setting night-start writes the settings blob."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "time",
+        "set_value",
+        {"entity_id": NIGHT_START, "time": dt_time(23, 30)},
+        blocking=True,
+    )
+    assert mock_client.write_settings.await_args.args[0].night_start == dt_time(23, 30)
