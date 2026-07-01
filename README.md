@@ -5,6 +5,9 @@ runs entirely over local Bluetooth Low Energy - no cloud account, no app, no
 internet dependency. Sensor readings come from the clock's own advertisements;
 settings and alarms are read and written over a direct BLE connection.
 
+Not affiliated with or endorsed by Qingping. "Qingping" is used only to say
+which device this works with.
+
 ## Before you add the clock
 
 A CGD1 only accepts one paired app at a time. If yours is already set up in
@@ -25,11 +28,14 @@ Home Assistant ships its own `qingping` integration, and its Bluetooth
 matching picks up the CGD1's advertisement too. Because of this, Home
 Assistant may offer to set up the clock through both integrations.
 
-Add it through **this** integration and ignore the built-in one. The built-in `qingping` is also local Bluetooth, but it only listens to
-advertisements passively, so it exposes sensors and nothing else. This
-integration also connects to the clock for the full control surface.
+Add it through **this** integration and ignore the built-in one. The built-in
+`qingping` is local Bluetooth like this one, but it only listens to
+advertisements passively, so it exposes sensors and nothing else - no alarms,
+no display settings, no time sync (and it doesn't list the CGD1 among its
+supported devices anyway). This integration also connects to the clock, so you
+get the full control surface on top of the sensors.
 
-## What it does
+## What this integration does
 
 - **Sensors**, read passively from the clock's Bluetooth advertisements -
   no connection needed, so they keep working even if the clock is out of
@@ -68,8 +74,10 @@ Or add it by hand:
 5. Restart Home Assistant.
 
 This integration depends on the
-[`qingping-cgd1`](https://github.com/rjocoleman/qingping-cgd1) Python
-library for the Bluetooth protocol.
+[`qingping-cgd1`](https://github.com/rjocoleman/qingping-cgd1) Python library
+for the Bluetooth protocol. Home Assistant installs that dependency itself,
+from the integration's `manifest.json`, the first time the integration loads
+(HACS only copies the files; it doesn't install Python packages).
 
 ## Setting it up
 
@@ -158,12 +166,41 @@ target:
   device_id: <your clock's device id>
 ```
 
+## Limitations
+
+- Custom ringtones aren't supported. The clock can take an uploaded ringtone
+  (clOwOck documents the audio-transfer protocol), but it's fiddly and out of
+  scope here.
+- The clock stores its timezone offset in 6-minute steps, so an unusual offset
+  like +5:45 rounds slightly when the integration matches Home Assistant's
+  timezone.
+
 ## Removing it
 
 Go to **Settings -> Devices & services**, open the integration, and delete
 the entry. The device and its entities are removed with it. If the clock
 still shows as paired afterwards, reset it as described above before
 setting it up with anything else.
+
+## Credits and other projects
+
+The protocol was mapped by clOwOck. Related projects for this clock:
+
+- [MrBoombastic/clOwOck](https://github.com/MrBoombastic/clOwOck), an Android
+  app for the CGD1, whose reverse-engineered protocol notes (authentication,
+  GATT layout, sensor and alarm formats) are the reference this was built from.
+
+Where this one differs: the existing integrations do control (alarms, settings,
+time) but don't expose the clock's temperature, humidity and battery; Home
+Assistant's built-in `qingping` does the sensors but no control. This one does
+both - sensors from the advertisements, control over a connection - and adds the
+reset/reauth handling and the DST-aware time sync described above.
+
+## How this was built
+
+The integration, its `qingping-cgd1` library, and these docs were built largely
+with AI assistance (Claude), then reviewed and tested against a real CGD1
+(firmware 1.0.1_0130). It works and it's tested, but it's a spare-time project - no warranty, no support promises.
 
 ## Licence
 
