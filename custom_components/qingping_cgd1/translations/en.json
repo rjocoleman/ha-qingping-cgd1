@@ -5,7 +5,10 @@
       "bluetooth_confirm": {
         "title": "Set up {name}",
         "description": "Confirm setup for {name} ({address}). Leave the token as-is unless your device needs a different one. If the clock is already set up in another app, reset it first (hold the button until the Bluetooth icon flashes).",
-        "data": { "token": "Auth token (32 hex characters)" }
+        "data": { "token": "Auth token (32 hex characters)" },
+        "data_description": {
+          "token": "The clock's 16-byte pairing token (hex). Leave the suggested value to pair this clock only to this Home Assistant. To control the same clock from more than one app or Home Assistant instance, set the same token in each of them, reset the clock, then add it here."
+        }
       },
       "user": {
         "title": "Qingping CGD1 Alarm Clock",
@@ -13,12 +16,18 @@
         "data": {
           "address": "Device",
           "token": "Auth token (32 hex characters)"
+        },
+        "data_description": {
+          "token": "The clock's 16-byte pairing token (hex). Leave the suggested value to pair this clock only to this Home Assistant. To control the same clock from more than one app or Home Assistant instance, set the same token in each of them, reset the clock, then add it here."
         }
       },
       "reauth_confirm": {
         "title": "Reconnect {name}",
         "description": "This clock is paired with another app and rejected Home Assistant. Reset it first: press and hold the clock's button until the Bluetooth icon flashes (or remove the clock in the Qingping+ app), then try again. Once reset, the clock pairs with the first app that connects, so add it here straight after resetting.",
-        "data": { "token": "Auth token (32 hex characters)" }
+        "data": { "token": "Auth token (32 hex characters)" },
+        "data_description": {
+          "token": "The token this entry already uses. Keep it to re-pair the same clock, or set the same token here and on the clock (after a reset) if you're sharing it with another app or Home Assistant instance."
+        }
       }
     },
     "error": {

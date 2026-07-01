@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.bluetooth import (
@@ -18,7 +19,6 @@ from homeassistant.core import callback
 import voluptuous as vol
 
 from qingping_cgd1.client import QingpingCGD1Client
-from qingping_cgd1.const import DEFAULT_AUTH_TOKEN
 from qingping_cgd1.exceptions import AuthError, QingpingError
 
 from .const import (
@@ -67,8 +67,13 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     def __init__(self) -> None:
-        """Start with no pending discovery."""
+        """Start with no pending discovery and a fresh suggested token.
+
+        The token is a per-device pairing secret, not a shared default, so
+        each new setup gets its own randomly generated token to bind.
+        """
         self._discovery: BluetoothServiceInfoBleak | None = None
+        self._suggested_token = secrets.token_hex(TOKEN_LENGTH_BYTES)
 
     @staticmethod
     @callback
@@ -108,7 +113,7 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = connect_error
         return self.async_show_form(
             step_id="bluetooth_confirm",
-            data_schema=self._token_schema(),
+            data_schema=self._token_schema(self._suggested_token),
             errors=errors,
             description_placeholders={"name": DEFAULT_NAME, "address": address},
         )
@@ -144,7 +149,7 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Required(CONF_ADDRESS): vol.In(choices),
-                vol.Required(CONF_TOKEN, default=DEFAULT_AUTH_TOKEN.hex()): str,
+                vol.Required(CONF_TOKEN, default=self._suggested_token): str,
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
@@ -180,7 +185,7 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = connect_error
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=self._token_schema(),
+            data_schema=self._token_schema(reauth_entry.data[CONF_TOKEN]),
             errors=errors,
             description_placeholders={"name": DEFAULT_NAME},
         )
@@ -205,10 +210,8 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
         await client.disconnect()
         return None
 
-    def _token_schema(self) -> vol.Schema:
-        return vol.Schema(
-            {vol.Required(CONF_TOKEN, default=DEFAULT_AUTH_TOKEN.hex()): str}
-        )
+    def _token_schema(self, default_hex: str) -> vol.Schema:
+        return vol.Schema({vol.Required(CONF_TOKEN, default=default_hex): str})
 
     def _create(self, address: str, token_hex: str) -> ConfigFlowResult:
         return self.async_create_entry(

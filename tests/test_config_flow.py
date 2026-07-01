@@ -30,23 +30,64 @@ if TYPE_CHECKING:
 TOKEN_HEX = DEFAULT_AUTH_TOKEN.hex()
 
 
+def _suggested_token(result: dict) -> str:
+    """Read the CONF_TOKEN default suggested by a form's schema."""
+    keys = [key for key in result["data_schema"].schema if key == CONF_TOKEN]
+    assert keys, "CONF_TOKEN not found in schema"
+    return keys[0].default()
+
+
 async def test_bluetooth_discovery_creates_entry(
     hass: HomeAssistant, enable_bluetooth: None, mock_client: MagicMock
 ) -> None:
-    """A discovered device confirms with the default token and is created."""
+    """A discovered device confirms with its suggested random token and is created."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=make_service_info()
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "bluetooth_confirm"
 
+    suggested_token = _suggested_token(result)
+    assert len(bytes.fromhex(suggested_token)) == 16
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_TOKEN: suggested_token}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["result"].unique_id == MAC
+    assert result["data"] == {CONF_ADDRESS: MAC, CONF_TOKEN: suggested_token}
+    assert mock_client.connect.await_count == 1
+
+
+async def test_bluetooth_discovery_allows_token_override(
+    hass: HomeAssistant, enable_bluetooth: None, mock_client: MagicMock
+) -> None:
+    """A user-supplied token overrides the suggested default and is stored."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=make_service_info()
+    )
+    assert _suggested_token(result) != TOKEN_HEX
+
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_TOKEN: TOKEN_HEX}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["result"].unique_id == MAC
     assert result["data"] == {CONF_ADDRESS: MAC, CONF_TOKEN: TOKEN_HEX}
-    assert mock_client.connect.await_count == 1
+
+
+async def test_bluetooth_discovery_suggests_distinct_tokens(
+    hass: HomeAssistant, enable_bluetooth: None
+) -> None:
+    """Two separate flows offer different suggested tokens."""
+    first = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=make_service_info()
+    )
+    second = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": SOURCE_BLUETOOTH},
+        data=make_service_info(address="58:2D:34:12:34:57"),
+    )
+    assert _suggested_token(first) != _suggested_token(second)
 
 
 async def test_bluetooth_discovery_rejects_bad_token(
@@ -96,11 +137,15 @@ async def test_manual_user_flow(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "user"
 
+    suggested_token = _suggested_token(result)
+    assert len(bytes.fromhex(suggested_token)) == 16
+
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {CONF_ADDRESS: MAC, CONF_TOKEN: TOKEN_HEX}
+        result["flow_id"], {CONF_ADDRESS: MAC, CONF_TOKEN: suggested_token}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["result"].unique_id == MAC
+    assert result["data"] == {CONF_ADDRESS: MAC, CONF_TOKEN: suggested_token}
 
 
 async def test_user_flow_no_devices_aborts(
@@ -132,11 +177,16 @@ async def test_reauth_flow_success(
     mock_entry: MockConfigEntry,
     mock_client: MagicMock,
 ) -> None:
-    """Reauth retries the connection and stores the (possibly new) token."""
+    """Reauth defaults to the existing entry's token and stores it again.
+
+    The clock is bound to whatever token the entry already holds, so reauth
+    must suggest that token, not a freshly generated one.
+    """
     mock_entry.add_to_hass(hass)
     result = await mock_entry.start_reauth_flow(hass)
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "reauth_confirm"
+    assert _suggested_token(result) == mock_entry.data[CONF_TOKEN]
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_TOKEN: TOKEN_HEX}
