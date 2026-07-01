@@ -84,5 +84,32 @@
       "night_end": { "name": "Night Mode To" },
       "alarm_time": { "name": "Alarm {slot} time" }
     }
+  },
+  "services": {
+    "set_alarm": {
+      "name": "Set alarm",
+      "description": "Write a single alarm slot, including its days and snooze.",
+      "fields": {
+        "slot": { "name": "Slot", "description": "Alarm slot, 0 to 15." },
+        "time": { "name": "Time", "description": "Alarm time." },
+        "days": {
+          "name": "Days",
+          "description": "Days the alarm repeats. Leave empty for a one-shot alarm."
+        },
+        "snooze": { "name": "Snooze", "description": "Allow snoozing." },
+        "enabled": { "name": "Enabled", "description": "Whether the alarm is on." }
+      }
+    },
+    "delete_alarm": {
+      "name": "Delete alarm",
+      "description": "Clear a single alarm slot.",
+      "fields": {
+        "slot": { "name": "Slot", "description": "Alarm slot, 0 to 15." }
+      }
+    },
+    "sync_time": {
+      "name": "Sync time",
+      "description": "Push the current time to the clock."
+    }
   }
 }

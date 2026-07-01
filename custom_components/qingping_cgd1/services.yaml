@@ -1,0 +1,52 @@
+set_alarm:
+  target:
+    device:
+      integration: qingping_cgd1
+  fields:
+    slot:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 15
+          mode: box
+    time:
+      required: true
+      selector:
+        time:
+    days:
+      selector:
+        select:
+          multiple: true
+          options:
+            - monday
+            - tuesday
+            - wednesday
+            - thursday
+            - friday
+            - saturday
+            - sunday
+    snooze:
+      selector:
+        boolean:
+    enabled:
+      selector:
+        boolean:
+
+delete_alarm:
+  target:
+    device:
+      integration: qingping_cgd1
+  fields:
+    slot:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 15
+          mode: box
+
+sync_time:
+  target:
+    device:
+      integration: qingping_cgd1

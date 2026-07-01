@@ -6,11 +6,13 @@ from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
 
+from .const import DOMAIN, SERVICE_SYNC_TIME
 from .coordinator import (
     QingpingControlCoordinator,
     QingpingData,
     QingpingPassiveCoordinator,
 )
+from .services import async_setup_services
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -36,6 +38,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: QingpingConfigEntry) -> 
     entry.async_on_unload(passive.async_start())
     entry.async_on_unload(entry.add_update_listener(_async_reload_on_update))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    if not hass.services.has_service(DOMAIN, SERVICE_SYNC_TIME):
+        async_setup_services(hass)
 
     # Populate the control entities without blocking setup: a push integration
     # must not fail to load just because the clock is momentarily out of range.
