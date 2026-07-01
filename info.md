@@ -13,8 +13,9 @@ until the Bluetooth icon flashes, or remove it in the Qingping+ app.
   services.
 
 Home Assistant's built-in `qingping` integration also matches this clock's
-advertisement. Add it through **this** integration, not the built-in one -
-this one adds full control (alarms, settings, time sync) on top of the sensors.
+advertisement, but it only does passive sensors. Add it through **this**
+integration, not the built-in one, for full control (alarms, settings, time
+sync) on top of the sensors.
 
 See the [README](https://github.com/rjocoleman/ha-qingping-cgd1) for the
 full entity list and service examples.
