@@ -43,6 +43,9 @@
     }
   },
   "entity": {
+    "button": {
+      "sync_time": { "name": "Sync time" }
+    },
     "sensor": {
       "temperature": { "name": "Temperature" },
       "humidity": { "name": "Humidity" },

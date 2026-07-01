@@ -6,11 +6,19 @@ from datetime import UTC, datetime, time as dt_time, timedelta, timezone
 from typing import TYPE_CHECKING
 
 from freezegun import freeze_time
-from homeassistant.const import EntityCategory
+from homeassistant.const import CONF_ADDRESS, EntityCategory
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 from qingping_cgd1.codec import next_alarm
 from qingping_cgd1.models import Language, Weekday
 
+from custom_components.qingping_cgd1.const import (
+    CONF_SYNC_TIME_ON_CONNECT,
+    CONF_TOKEN,
+    DOMAIN,
+)
+from qingping_cgd1.const import DEFAULT_AUTH_TOKEN
 from tests.conftest import (
+    MAC,
     inject_service_info,
     make_service_info,
     sample_alarms,
@@ -21,7 +29,6 @@ if TYPE_CHECKING:
     from unittest.mock import MagicMock
 
     from homeassistant.core import HomeAssistant
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 TEMP = "sensor.qingping_alarm_clock_temperature"
 HUMIDITY = "sensor.qingping_alarm_clock_humidity"
@@ -40,6 +47,7 @@ ALARM0_ENABLE = "switch.qingping_alarm_clock_alarm_1_enabled"
 NIGHT_START = "time.qingping_alarm_clock_night_mode_from"
 NIGHT_END = "time.qingping_alarm_clock_night_mode_to"
 ALARM0_TIME = "time.qingping_alarm_clock_alarm_1_time"
+SYNC_TIME = "button.qingping_alarm_clock_sync_time"
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -319,3 +327,27 @@ async def test_night_start_set_writes_setting(
         blocking=True,
     )
     assert mock_client.write_settings.await_args.args[0].night_start == dt_time(23, 30)
+
+
+async def test_sync_time_button_calls_client(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_client: MagicMock,
+) -> None:
+    """Pressing the button syncs the clock."""
+    # Create entry with sync_on_connect disabled
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=MAC,
+        data={CONF_ADDRESS: MAC, CONF_TOKEN: DEFAULT_AUTH_TOKEN.hex()},
+        options={CONF_SYNC_TIME_ON_CONNECT: False},
+    )
+    await _setup(hass, entry)
+    mock_client.sync_time.reset_mock()
+    await hass.services.async_call(
+        "button",
+        "press",
+        {"entity_id": SYNC_TIME},
+        blocking=True,
+    )
+    assert mock_client.sync_time.await_count == 1
