@@ -77,8 +77,9 @@ library for the Bluetooth protocol.
 2. Go to **Settings -> Devices & services**. Home Assistant should discover
    the clock automatically; if not, use **Add integration** and search for
    **Qingping CGD1 Alarm Clock**.
-3. Confirm the auth token. Leave the default: once you have reset the clock (step 1) it binds to
-   whatever connects first, which is this default.
+3. Confirm the auth token. Leave the default: once you have reset the clock
+   (step 1) it binds to whatever connects first, which is this default. You
+   only need to change it if you deliberately manage your own pairing tokens.
 
 If setup fails with an authentication error, the clock is still paired with
 something else. Reset it as described above and try again.
