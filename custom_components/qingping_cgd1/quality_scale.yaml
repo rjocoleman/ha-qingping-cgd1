@@ -1,0 +1,59 @@
+# Home Assistant Integration Quality Scale checklist.
+# Target tier: Silver.
+rules:
+  # --- Bronze ---
+  action-setup: done
+  appropriate-polling:
+    status: exempt
+    comment: Sensors are push via advertisements; control state changes only on write.
+  brands:
+    status: exempt
+    comment: >-
+      Distributed as a HACS custom repository, not the default store, so a
+      home-assistant/brands submission is not required. Brand images ship under
+      brand/ once available.
+  common-modules: done
+  config-flow-test-coverage: done
+  config-flow: done
+  dependency-transparency: done
+  docs-actions: done
+  docs-high-level-description: done
+  docs-installation-instructions: done
+  docs-removal-instructions: done
+  entity-event-setup: done
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure:
+    status: exempt
+    comment: The device is validated by bluetooth discovery; no network probe at config time.
+  test-before-setup: done
+  unique-config-entry: done
+
+  # --- Silver ---
+  action-exceptions: done
+  config-entry-unloading: done
+  docs-configuration-parameters: done
+  docs-installation-parameters: done
+  entity-unavailable: done
+  integration-owner: done
+  log-when-unavailable: done
+  parallel-updates: done
+  reauthentication-flow: done
+  test-coverage: done
+
+  # --- Gold (selected) ---
+  devices: done
+  diagnostics: done
+  discovery: done
+  discovery-update-info:
+    status: exempt
+    comment: The address is the stable identifier; there is no extra network info to update.
+  docs-supported-devices: done
+  entity-category: done
+  entity-device-class: done
+  entity-disabled-by-default: done
+  entity-translations: done
+  stale-devices:
+    status: exempt
+    comment: A config entry maps to exactly one CGD1 device.

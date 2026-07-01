@@ -1,0 +1,163 @@
+# Qingping CGD1 Alarm Clock
+
+A Home Assistant integration for the Qingping CGD1 Bluetooth alarm clock. It
+runs entirely over local Bluetooth Low Energy - no cloud account, no app, no
+internet dependency. Sensor readings come from the clock's own advertisements;
+settings and alarms are read and written over a direct BLE connection.
+
+## Before you add the clock
+
+A CGD1 only accepts one paired app at a time. If yours is already set up in
+the Qingping+ app (or was previously added to another Home Assistant
+instance), Home Assistant's setup will fail with an authentication error.
+
+Reset the clock first:
+
+- Press and hold the clock's button until the Bluetooth icon flashes, or
+- Remove the clock in the Qingping+ app.
+
+Once reset, the clock pairs with the first app that connects, so add it here
+straight after resetting.
+
+## A note about the built-in `qingping` integration
+
+Home Assistant ships its own `qingping` integration, and its Bluetooth
+matching picks up the CGD1's advertisement too. Because of this, Home
+Assistant may offer to set up the clock through both integrations.
+
+Add it through **this** integration and ignore the built-in one. The built-in `qingping` is also local Bluetooth, but it only listens to
+advertisements passively, so it exposes sensors and nothing else. This
+integration also connects to the clock for the full control surface.
+
+## What it does
+
+- **Sensors**, read passively from the clock's Bluetooth advertisements -
+  no connection needed, so they keep working even if the clock is out of
+  range of an active BLE link: temperature, humidity, battery and signal
+  strength.
+- **Settings and alarms**, read and written over an active BLE connection
+  that the integration opens on demand: volume, day/night display
+  brightness, backlight timeout, language, time format, temperature unit,
+  night mode and its time window, and all 16 alarm slots (time and
+  enabled state).
+- **Time sync**, pushed to the clock automatically on every successful
+  connection (an option you can turn off), or manually via a button or
+  service call.
+
+## Installing through HACS
+
+This is a custom repository. The quickest way is the button below, which
+opens HACS on your Home Assistant with this repo pre-filled:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rjocoleman&repository=ha-qingping-cgd1&category=integration)
+
+Then download it and restart Home Assistant.
+
+Or add it by hand:
+
+1. In Home Assistant, open HACS.
+2. Open the three-dot menu, choose **Custom repositories**.
+3. Add `https://github.com/rjocoleman/ha-qingping-cgd1` with category
+   **Integration**.
+4. Search for **Qingping CGD1 Alarm Clock** and download it.
+5. Restart Home Assistant.
+
+This integration depends on the
+[`qingping-cgd1`](https://github.com/rjocoleman/qingping-cgd1) Python
+library for the Bluetooth protocol.
+
+## Setting it up
+
+1. Reset the clock (see above) if it is paired with anything else.
+2. Go to **Settings -> Devices & services**. Home Assistant should discover
+   the clock automatically; if not, use **Add integration** and search for
+   **Qingping CGD1 Alarm Clock**.
+3. Confirm the auth token. Leave the default: once you have reset the clock (step 1) it binds to
+   whatever connects first, which is this default.
+
+If setup fails with an authentication error, the clock is still paired with
+something else. Reset it as described above and try again.
+
+### Options
+
+Open the integration and choose **Configure** to turn automatic time sync
+on connection off, if you would rather sync manually via the button or
+service.
+
+## Entities
+
+| Entity | Type | Notes |
+| --- | --- | --- |
+| Temperature | Sensor | From advertisements |
+| Humidity | Sensor | From advertisements |
+| Battery | Sensor (diagnostic) | From advertisements |
+| Signal strength | Sensor (diagnostic) | From advertisements |
+| Firmware | Sensor (diagnostic) | Read over BLE |
+| Next alarm | Sensor | Soonest enabled alarm, as a timestamp |
+| Volume | Number | 1-5 |
+| Day Brightness | Number | 0-100% |
+| Night Brightness | Number | 0-100% |
+| Backlight Timeout | Number | 0-30 seconds |
+| Language | Select | Chinese / English |
+| Time Format | Select | 24-hour / 12-hour |
+| Temperature Unit | Select | Celsius / Fahrenheit |
+| Alarms | Switch | Master alarm enable |
+| Night Mode | Switch | |
+| Alarm 1-16 enabled | Switch | Only alarms 1 and 2 are enabled by default; enable the rest yourself |
+| Night Mode From / To | Time | Night mode window |
+| Alarm 1-16 time | Time | Only alarms 1 and 2 are enabled by default |
+| Sync time | Button | Pushes the current time to the clock |
+
+Alarm slots 3-16 are disabled by default to keep the entity list manageable.
+Enable the ones you need from the entity's settings.
+
+## Services
+
+### `qingping_cgd1.set_alarm`
+
+Write a single alarm slot, including its days and snooze setting.
+
+```yaml
+action: qingping_cgd1.set_alarm
+target:
+  device_id: <your clock's device id>
+data:
+  slot: 0
+  time: "07:30:00"
+  days: [monday, wednesday, friday]
+  snooze: true
+  enabled: true
+```
+
+### `qingping_cgd1.delete_alarm`
+
+Clear a single alarm slot.
+
+```yaml
+action: qingping_cgd1.delete_alarm
+target:
+  device_id: <your clock's device id>
+data:
+  slot: 0
+```
+
+### `qingping_cgd1.sync_time`
+
+Push the current time to the clock. Same effect as the **Sync time** button.
+
+```yaml
+action: qingping_cgd1.sync_time
+target:
+  device_id: <your clock's device id>
+```
+
+## Removing it
+
+Go to **Settings -> Devices & services**, open the integration, and delete
+the entry. The device and its entities are removed with it. If the clock
+still shows as paired afterwards, reset it as described above before
+setting it up with anything else.
+
+## Licence
+
+MIT.
