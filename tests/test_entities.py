@@ -28,6 +28,8 @@ BATTERY = "sensor.qingping_alarm_clock_battery"
 SIGNAL = "sensor.qingping_alarm_clock_signal_strength"
 FIRMWARE = "sensor.qingping_alarm_clock_firmware"
 NEXT_ALARM = "sensor.qingping_alarm_clock_next_alarm"
+VOLUME = "number.qingping_alarm_clock_volume"
+DAY_BRIGHTNESS = "number.qingping_alarm_clock_day_brightness"
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -88,3 +90,33 @@ async def test_next_alarm_sensor(
     state = hass.states.get(NEXT_ALARM)
     assert state is not None
     assert datetime.fromisoformat(state.state) == expected
+
+
+async def test_number_reads_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Volume reflects the read settings blob."""
+    await _setup(hass, mock_entry)
+    assert hass.states.get(VOLUME).state == "3.0"
+    assert hass.states.get(DAY_BRIGHTNESS).state == "80.0"
+
+
+async def test_number_write_updates_setting(
+    hass: HomeAssistant,
+    enable_bluetooth: None,
+    mock_entry: MockConfigEntry,
+    mock_client: MagicMock,
+) -> None:
+    """Setting volume writes a replaced settings blob."""
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "number",
+        "set_value",
+        {"entity_id": VOLUME, "value": 5},
+        blocking=True,
+    )
+    written = mock_client.write_settings.await_args.args[0]
+    assert written.volume == 5
