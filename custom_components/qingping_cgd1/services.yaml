@@ -1,8 +1,12 @@
 set_alarm:
-  target:
-    device:
-      integration: qingping_cgd1
   fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          filter:
+            - integration: qingping_cgd1
+          multiple: true
     slot:
       required: true
       selector:
@@ -34,10 +38,14 @@ set_alarm:
         boolean:
 
 delete_alarm:
-  target:
-    device:
-      integration: qingping_cgd1
   fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          filter:
+            - integration: qingping_cgd1
+          multiple: true
     slot:
       required: true
       selector:
@@ -47,6 +55,11 @@ delete_alarm:
           mode: box
 
 sync_time:
-  target:
-    device:
-      integration: qingping_cgd1
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          filter:
+            - integration: qingping_cgd1
+          multiple: true
