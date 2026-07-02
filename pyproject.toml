@@ -31,9 +31,6 @@ test = [
 [tool.uv]
 package = false
 
-[tool.uv.sources]
-qingping-cgd1 = { path = "../qingping-cgd1", editable = true }
-
 [tool.ruff]
 required-version = ">=0.14"
 target-version = "py314"

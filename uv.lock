@@ -1073,7 +1073,7 @@ test = [
     { name = "pytest-asyncio", specifier = ">=0.25" },
     { name = "pytest-cov", specifier = ">=6.0" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.339" },
-    { name = "qingping-cgd1", editable = "../qingping-cgd1" },
+    { name = "qingping-cgd1", specifier = "==0.1.0" },
     { name = "serialx", specifier = "==1.8.0" },
 ]
 
@@ -2288,28 +2288,14 @@ wheels = [
 [[package]]
 name = "qingping-cgd1"
 version = "0.1.0"
-source = { editable = "../qingping-cgd1" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleak" },
     { name = "bleak-retry-connector" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "bleak", specifier = ">=0.22" },
-    { name = "bleak-retry-connector", specifier = ">=3.5" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mypy", specifier = ">=2.1" },
-    { name = "ruff", specifier = ">=0.15" },
-]
-test = [
-    { name = "freezegun", specifier = ">=1.5" },
-    { name = "pytest", specifier = ">=8.3" },
-    { name = "pytest-asyncio", specifier = ">=0.25" },
-    { name = "pytest-cov", specifier = ">=6.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/1b/dc/79886d3205bd78340c99c9ae4a462058882c22ac1f05c4f59b593a0778de/qingping_cgd1-0.1.0.tar.gz", hash = "sha256:2b784c7a6077703c618b119f9d82b33c9fdb8b495d801b24d6970a267b57fe8b", size = 50103, upload-time = "2026-07-02T07:26:12.304Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8c/3e/4f7618a208024d216bb2276d0c2392f7f57e826f0fdc2b31450e15b7efaa/qingping_cgd1-0.1.0-py3-none-any.whl", hash = "sha256:c885f526f6da8749f6cdf9b81465e2aa39f8c00b201979629ecc096ae5ac5c5b", size = 15032, upload-time = "2026-07-02T07:26:11.122Z" },
 ]
 
 [[package]]
