@@ -15,7 +15,7 @@ test = [
   "pytest>=8.3",
   "pytest-asyncio>=0.25",
   "pytest-cov>=6.0",
-  "pytest-homeassistant-custom-component==0.13.339",
+  "pytest-homeassistant-custom-component==0.13.344",
   # The library is a real runtime dependency; tests import parse_advertisement,
   # next_alarm and the models directly, so pin the same version the manifest
   # requires.
@@ -23,8 +23,8 @@ test = [
   # Fixed "now" for the next-alarm timestamp sensor test.
   "freezegun>=1.5",
   "aiousbwatcher==1.1.2",
-  "serialx==1.8.0",
-  "aioesphomeapi>=45.3.1",
+  "serialx==1.8.2",
+  "aioesphomeapi>=45.5.2",
   "dbus-fast>=5.0.22",
 ]
 
