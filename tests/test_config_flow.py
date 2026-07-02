@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from bleak.exc import BleakError
 from homeassistant.config_entries import SOURCE_BLUETOOTH, SOURCE_USER
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResultType
@@ -122,6 +123,38 @@ async def test_bluetooth_discovery_needs_reset_on_auth_error(
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {"base": "needs_reset"}
+
+
+async def test_bluetooth_discovery_cannot_connect_on_ble_error(
+    hass: HomeAssistant, enable_bluetooth: None, mock_client: MagicMock
+) -> None:
+    """A raw BLE error (e.g. the clock is not in pairing mode) maps to
+    cannot_connect, so the user never sees the generic "unknown" error.
+    """
+    mock_client.connect.side_effect = BleakError("characteristic not found")
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=make_service_info()
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_TOKEN: TOKEN_HEX}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "cannot_connect"}
+
+
+async def test_bluetooth_discovery_unknown_on_unexpected_error(
+    hass: HomeAssistant, enable_bluetooth: None, mock_client: MagicMock
+) -> None:
+    """An unexpected error is caught and surfaced as "unknown", never uncaught."""
+    mock_client.connect.side_effect = RuntimeError("boom")
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=make_service_info()
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_TOKEN: TOKEN_HEX}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "unknown"}
 
 
 async def test_manual_user_flow(

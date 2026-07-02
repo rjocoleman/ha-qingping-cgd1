@@ -19,7 +19,7 @@ test = [
   # The library is a real runtime dependency; tests import parse_advertisement,
   # next_alarm and the models directly, so pin the same version the manifest
   # requires.
-  "qingping-cgd1==0.1.0",
+  "qingping-cgd1==0.1.1",
   # Fixed "now" for the next-alarm timestamp sensor test.
   "freezegun>=1.5",
   "aiousbwatcher==1.1.2",

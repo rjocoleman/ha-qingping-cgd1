@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 import secrets
 from typing import TYPE_CHECKING, Any
 
+from bleak.exc import BleakError
 from homeassistant.components.bluetooth import (
     async_ble_device_from_address,
     async_discovered_service_info,
@@ -40,6 +42,8 @@ if TYPE_CHECKING:
 
     from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
     from homeassistant.config_entries import ConfigEntry
+
+_LOGGER = logging.getLogger(__name__)
 
 TOKEN_LENGTH_BYTES = 16
 
@@ -205,8 +209,11 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
             await client.connect()
         except AuthError:
             return "needs_reset"
-        except QingpingError:
+        except QingpingError, BleakError, TimeoutError:
             return "cannot_connect"
+        except Exception:
+            _LOGGER.exception("Unexpected error connecting to %s", address)
+            return "unknown"
         await client.disconnect()
         return None
 

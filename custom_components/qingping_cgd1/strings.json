@@ -37,7 +37,8 @@
     "error": {
       "invalid_token": "The auth token must be 32 hexadecimal characters (16 bytes).",
       "needs_reset": "This clock is paired with another app and rejected Home Assistant. Reset it first: press and hold the clock's button until the Bluetooth icon flashes (or remove the clock in the Qingping+ app), then try again.",
-      "cannot_connect": "Could not connect to the clock. Make sure it is powered on and in range, then try again."
+      "cannot_connect": "Could not connect to the clock. Make sure it is powered on and in range, then try again.",
+      "unknown": "Something went wrong talking to the clock. Check the logs, make sure it is powered on and in range, then try again."
     },
     "abort": {
       "already_configured": "This device is already set up.",

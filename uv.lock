@@ -1073,7 +1073,7 @@ test = [
     { name = "pytest-asyncio", specifier = ">=0.25" },
     { name = "pytest-cov", specifier = ">=6.0" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.339" },
-    { name = "qingping-cgd1", specifier = "==0.1.0" },
+    { name = "qingping-cgd1", specifier = "==0.1.1" },
     { name = "serialx", specifier = "==1.8.0" },
 ]
 
@@ -2287,15 +2287,15 @@ wheels = [
 
 [[package]]
 name = "qingping-cgd1"
-version = "0.1.0"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleak" },
     { name = "bleak-retry-connector" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1b/dc/79886d3205bd78340c99c9ae4a462058882c22ac1f05c4f59b593a0778de/qingping_cgd1-0.1.0.tar.gz", hash = "sha256:2b784c7a6077703c618b119f9d82b33c9fdb8b495d801b24d6970a267b57fe8b", size = 50103, upload-time = "2026-07-02T07:26:12.304Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/1f/265e9af38fb502f503c77b0fbb209e5f86d51ad88e4ba6e598137c0e504c/qingping_cgd1-0.1.1.tar.gz", hash = "sha256:50d329dbb9fe43e2659dcabee1feea3345bc013648e9e8b6d5d5e882793aa6ce", size = 50646, upload-time = "2026-07-02T07:59:33.982Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8c/3e/4f7618a208024d216bb2276d0c2392f7f57e826f0fdc2b31450e15b7efaa/qingping_cgd1-0.1.0-py3-none-any.whl", hash = "sha256:c885f526f6da8749f6cdf9b81465e2aa39f8c00b201979629ecc096ae5ac5c5b", size = 15032, upload-time = "2026-07-02T07:26:11.122Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/3b/c56aa0f83e6de8d4d2b447e894842f5ba7340789e5a42873f6355fa32fbb/qingping_cgd1-0.1.1-py3-none-any.whl", hash = "sha256:afb41677acef126c1ccbf578e604aad0675fe9eb22b90eac3a2db6bf5281a887", size = 15057, upload-time = "2026-07-02T07:59:32.734Z" },
 ]
 
 [[package]]
