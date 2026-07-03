@@ -10,6 +10,7 @@ from bleak.exc import BleakError
 from homeassistant.components.bluetooth import (
     async_ble_device_from_address,
     async_discovered_service_info,
+    async_scanner_count,
 )
 from homeassistant.config_entries import (
     ConfigFlow,
@@ -203,17 +204,31 @@ class QingpingConfigFlow(ConfigFlow, domain=DOMAIN):
         """
         device = async_ble_device_from_address(self.hass, address, connectable=True)
         if device is None:
+            _LOGGER.debug(
+                "No connectable BLE device for %s: HA has no recent connectable "
+                "advertisement (connectable scanners/proxies in range: %d). The "
+                "clock may be out of range of HA's adapter, held by another "
+                "connection, or not advertising.",
+                address,
+                async_scanner_count(self.hass, connectable=True),
+            )
             return "cannot_connect"
+        _LOGGER.debug("Connecting to %s to validate the pairing token", address)
         client = QingpingCGD1Client(device, bytes.fromhex(token_hex))
         try:
             await client.connect()
-        except AuthError:
+        except AuthError as err:
+            _LOGGER.debug("Auth rejected by %s (needs reset): %s", address, err)
             return "needs_reset"
-        except QingpingError, BleakError, TimeoutError:
+        except (QingpingError, BleakError, TimeoutError) as err:
+            _LOGGER.debug(
+                "Could not connect to %s: %s: %s", address, type(err).__name__, err
+            )
             return "cannot_connect"
         except Exception:
             _LOGGER.exception("Unexpected error connecting to %s", address)
             return "unknown"
+        _LOGGER.debug("Connected and authenticated to %s", address)
         await client.disconnect()
         return None
 
