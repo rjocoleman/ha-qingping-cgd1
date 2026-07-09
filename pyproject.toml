@@ -10,12 +10,12 @@ authors = [{ name = "Robert Coleman" }]
 dependencies = []
 
 [dependency-groups]
-dev = ["ruff>=0.15", "mypy>=2.1"]
+dev = ["ruff>=0.15", "mypy>=2.2.0"]
 test = [
   "pytest>=8.3",
   "pytest-asyncio>=0.25",
   "pytest-cov>=6.0",
-  "pytest-homeassistant-custom-component==0.13.344",
+  "pytest-homeassistant-custom-component==0.13.345",
   # The library is a real runtime dependency; tests import parse_advertisement,
   # next_alarm and the models directly, so pin the same version the manifest
   # requires.
