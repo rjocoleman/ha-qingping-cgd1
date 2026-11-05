@@ -5,6 +5,7 @@
     { "service_data_uuid": "0000fdcd-0000-1000-8000-00805f9b34fb" },
     { "service_uuid": "22210000-554a-4546-5542-46534450464d" }
   ],
+  "categories": ["sensors.temperature_humidity"],
   "codeowners": ["@rjocoleman"],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
