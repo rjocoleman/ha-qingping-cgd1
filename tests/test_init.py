@@ -60,6 +60,6 @@ async def test_device_sw_version_populated_on_setup(
     await hass.async_block_till_done()
 
     registry = dr.async_get(hass)
-    device = registry.async_get_device(identifiers={(DOMAIN, MAC)})
+    device = registry.async_get_device_by_identifier((DOMAIN, MAC), mock_entry.entry_id)
     assert device is not None
     assert device.sw_version == "1.2.3"
