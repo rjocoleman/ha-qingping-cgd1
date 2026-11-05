@@ -13,7 +13,7 @@ pre-commit:
       run: uv run mypy custom_components/qingping_cgd1
     zizmor:
       glob: ".github/workflows/*.{yml,yaml}"
-      run: uvx zizmor@1.25.2 {staged_files}
+      run: uvx zizmor@1.32.0 {staged_files}
 
 pre-push:
   commands:
