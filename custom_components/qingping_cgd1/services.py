@@ -9,7 +9,6 @@ from homeassistant.const import ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv, device_registry as dr
-import voluptuous as vol
 
 from qingping_cgd1.const import ALARM_SLOT_COUNT
 from qingping_cgd1.models import Alarm, Weekday
@@ -30,6 +29,13 @@ if TYPE_CHECKING:
     from datetime import time
 
     from .coordinator import QingpingConfigEntry, QingpingControlCoordinator
+
+# Home Assistant 2026.9+ aliases voluptuous to probatio at runtime and types its
+# APIs with probatio. Older releases supported by hacs.json have no probatio.
+if TYPE_CHECKING:
+    import probatio as vol
+else:
+    import voluptuous as vol
 
 _WEEKDAYS = {name.lower(): member for name, member in Weekday.__members__.items()}
 

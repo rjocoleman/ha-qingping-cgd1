@@ -19,7 +19,6 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import callback
-import voluptuous as vol
 
 from qingping_cgd1.client import QingpingCGD1Client
 from qingping_cgd1.exceptions import AuthError, QingpingError
@@ -43,6 +42,13 @@ if TYPE_CHECKING:
 
     from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
     from homeassistant.config_entries import ConfigEntry
+
+# Home Assistant 2026.9+ aliases voluptuous to probatio at runtime and types its
+# APIs with probatio. Older releases supported by hacs.json have no probatio.
+if TYPE_CHECKING:
+    import probatio as vol
+else:
+    import voluptuous as vol
 
 _LOGGER = logging.getLogger(__name__)
 
