@@ -23,7 +23,7 @@ test = [
   # Fixed "now" for the next-alarm timestamp sensor test.
   "freezegun>=1.5",
   "aiousbwatcher==1.1.2",
-  "serialx==1.11.0",
+  "serialx==1.15.1",
   "aioesphomeapi>=45.5.2",
   "dbus-fast>=5.0.22",
 ]
