@@ -225,6 +225,23 @@ This integration does both: the temperature, humidity and battery sensors from
 the advertisements, and full control over a connection, plus the reset/reauth
 handling and DST-aware time sync described above.
 
+## Releasing
+
+1. Set the same version in `custom_components/qingping_cgd1/manifest.json` and
+   `pyproject.toml`, and merge that to `main`. Use a beta suffix like `0.2.0b1`
+   for a pre-release.
+2. Tag the merge commit with the bare version and push the tag:
+
+   ```sh
+   git tag 0.2.0
+   git push origin 0.2.0
+   ```
+
+The release workflow runs CI and validation, checks the tag matches both
+versions and is on `main`, then publishes a GitHub release with generated
+notes. The Marketplace offers each release as a version, and only offers
+pre-releases to users who turn them on.
+
 ## How this was built
 
 The integration, its `qingping-cgd1` library, and these docs were built largely
