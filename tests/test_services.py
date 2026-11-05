@@ -34,7 +34,8 @@ if TYPE_CHECKING:
 
 async def _device_id(hass: HomeAssistant) -> str:
     registry = hass.data["device_registry"]
-    device = registry.async_get_device(connections={("bluetooth", MAC)})
+    (entry,) = hass.config_entries.async_entries(DOMAIN)
+    device = registry.async_get_device_by_connection(("bluetooth", MAC), entry.entry_id)
     assert device is not None
     return device.id
 

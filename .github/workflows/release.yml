@@ -1,0 +1,64 @@
+name: Release
+
+# Pushing a version tag such as 0.2.0 or 0.2.0b1 publishes a GitHub release.
+# The Marketplace offers releases as versions and requires the tag to match
+# the manifest version, so the tag carries no "v" prefix.
+on:
+  push:
+    tags: ["[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  validate:
+    name: Validate
+    uses: ./.github/workflows/validate.yml
+
+  release:
+    name: Publish release
+    needs: [ci, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the tag matches the versions and is on main
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          manifest_version=$(jq -r .version custom_components/qingping_cgd1/manifest.json)
+          project_version=$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          for version in "$manifest_version" "$project_version"; do
+            if [[ "$TAG" != "$version" ]]; then
+              echo "::error::Tag $TAG does not match manifest.json ($manifest_version) and pyproject.toml ($project_version)"
+              exit 1
+            fi
+          done
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $TAG is not on main"
+            exit 1
+          fi
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          flags=(--verify-tag --generate-notes --title "$TAG")
+          if [[ "$TAG" =~ (a|b|rc)[0-9]+$ ]]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" "${flags[@]}"
