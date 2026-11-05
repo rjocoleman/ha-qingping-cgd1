@@ -58,10 +58,11 @@ get the full control surface on top of the sensors.
 
 ## Installing through the Marketplace
 
-This is a custom repository. The quickest way is the button below, which
-opens the repository in the Marketplace on your Home Assistant:
+The Marketplace is in Home Assistant 2026.11 and later. This is a custom
+repository. The quickest way is the button below, which opens the repository
+in the Marketplace on your Home Assistant:
 
-[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rjocoleman&repository=ha-qingping-cgd1&category=integration)
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=rjocoleman&repository=ha-qingping-cgd1&category=integration)
 
 Then select **Install**.
 
@@ -81,6 +82,22 @@ This integration depends on the
 for the Bluetooth protocol. Home Assistant installs it from PyPI itself, from
 the integration's `manifest.json`, the first time the integration loads (the
 Marketplace only copies the files; it doesn't install Python packages).
+
+### Installing through HACS (Home Assistant 2026.5 to 2026.10)
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rjocoleman&repository=ha-qingping-cgd1&category=integration)
+
+Or add it by hand:
+
+1. In Home Assistant, open HACS.
+2. Open the three-dot menu, choose **Custom repositories**.
+3. Add `https://github.com/rjocoleman/ha-qingping-cgd1` with category
+   **Integration**.
+4. Search for **Qingping CGD1 Alarm Clock** and download it.
+5. Restart Home Assistant.
+
+When you update Home Assistant to 2026.11 or later, the Marketplace takes over
+the install and keeps updating it.
 
 ## Setting it up
 
@@ -184,6 +201,11 @@ Go to **Settings -> Devices & services**, open the integration, and delete
 the entry. The device and its entities are removed with it. If the clock
 still shows as paired afterwards, reset it as described above before
 setting it up with anything else.
+
+Removing the last entry also asks whether to uninstall the integration. To
+uninstall it later, open its page in the Marketplace, open the three-dot menu
+and choose **Uninstall**. If it is still set up, choose **Delete and
+uninstall** to do both at once.
 
 ## Credits
 
