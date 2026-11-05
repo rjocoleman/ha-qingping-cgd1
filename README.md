@@ -56,29 +56,31 @@ get the full control surface on top of the sensors.
   update it. This is what keeps the clock (and the next-alarm sensor)
   correct across a DST change.
 
-## Installing through HACS
+## Installing through the Marketplace
 
 This is a custom repository. The quickest way is the button below, which
-opens HACS on your Home Assistant with this repo pre-filled:
+opens the repository in the Marketplace on your Home Assistant:
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rjocoleman&repository=ha-qingping-cgd1&category=integration)
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rjocoleman&repository=ha-qingping-cgd1&category=integration)
 
-Then download it and restart Home Assistant.
+Then select **Install**.
 
 Or add it by hand:
 
-1. In Home Assistant, open HACS.
-2. Open the three-dot menu, choose **Custom repositories**.
-3. Add `https://github.com/rjocoleman/ha-qingping-cgd1` with category
-   **Integration**.
-4. Search for **Qingping CGD1 Alarm Clock** and download it.
-5. Restart Home Assistant.
+1. In Home Assistant, go to **Settings > Marketplace**.
+2. Select **Add from link**.
+3. Under **GitHub link**, enter `rjocoleman/ha-qingping-cgd1` and select
+   **Add**.
+4. Open **Qingping CGD1 Alarm Clock** and select **Install**.
+
+Home Assistant usually opens the setup page once the install finishes. After
+an update, restart Home Assistant to load the new version.
 
 This integration depends on the
 [`qingping-cgd1`](https://github.com/rjocoleman/qingping-cgd1) Python library
 for the Bluetooth protocol. Home Assistant installs it from PyPI itself, from
-the integration's `manifest.json`, the first time the integration loads (HACS
-only copies the files; it doesn't install Python packages).
+the integration's `manifest.json`, the first time the integration loads (the
+Marketplace only copies the files; it doesn't install Python packages).
 
 ## Setting it up
 
