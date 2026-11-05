@@ -10,12 +10,7 @@ rules:
   appropriate-polling:
     status: exempt
     comment: Sensors are push via advertisements; control state changes only on write.
-  brands:
-    status: exempt
-    comment: >-
-      Distributed through the Marketplace, not core, so a
-      home-assistant/brands submission is not required. Brand images ship in
-      brand/ inside the integration folder.
+  brands: done
   common-modules: done
   config-flow-test-coverage: done
   config-flow: done
